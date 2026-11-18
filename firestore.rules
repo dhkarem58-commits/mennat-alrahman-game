@@ -1,0 +1,458 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id, maxLen) {
+      return id is string && id.size() >= 1 && id.size() <= maxLen && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function hasValidBoundedStringList(arr, maxLen) {
+      return arr is list && arr.size() <= maxLen && (arr.size() == 0 || (arr[0] is string && arr[0].size() >= 1 && arr[0].size() <= 64));
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll([
+          'uid',
+          'displayName',
+          'xp',
+          'rankIndex',
+          'bestStreak',
+          'currentStreak',
+          'totalCorrect',
+          'totalAnswered',
+          'completedCardsCount',
+          'soundEnabled',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'displayName',
+          'xp',
+          'rankIndex',
+          'bestStreak',
+          'currentStreak',
+          'totalCorrect',
+          'totalAnswered',
+          'completedCardsCount',
+          'soundEnabled',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.uid == userId
+        && isValidId(data.uid, 128)
+        && data.displayName is string
+        && data.displayName.size() >= 1
+        && data.displayName.size() <= 100
+        && data.xp is number && data.xp >= 0 && data.xp <= 1000000
+        && data.rankIndex is number && data.rankIndex >= 0 && data.rankIndex <= 10
+        && data.bestStreak is number && data.bestStreak >= 0 && data.bestStreak <= 10000
+        && data.currentStreak is number && data.currentStreak >= 0 && data.currentStreak <= 10000
+        && data.totalCorrect is number && data.totalCorrect >= 0 && data.totalCorrect <= 100000
+        && data.totalAnswered is number && data.totalAnswered >= 0 && data.totalAnswered <= 100000
+        && data.completedCardsCount is number && data.completedCardsCount >= 0 && data.completedCardsCount <= 500
+        && data.soundEnabled is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStationProgress(data, userId, stationId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'stationId',
+          'chapterId',
+          'stars',
+          'bestScore',
+          'completedCardIds',
+          'challengePassed',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'stationId',
+          'chapterId',
+          'stars',
+          'bestScore',
+          'completedCardIds',
+          'challengePassed',
+          'updatedAt'
+        ])
+        && data.ownerId == userId
+        && data.stationId == stationId
+        && isValidId(data.ownerId, 128)
+        && isValidId(data.stationId, 64)
+        && isValidId(data.chapterId, 32)
+        && data.stars is number && data.stars >= 0 && data.stars <= 3
+        && data.bestScore is number && data.bestScore >= 0 && data.bestScore <= 100
+        && hasValidBoundedStringList(data.completedCardIds, 30)
+        && data.challengePassed is bool
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidFactMastery(data, userId, factId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'factId',
+          'chapterId',
+          'masteryLevel',
+          'wrongCount',
+          'correctCount',
+          'nextReviewAtMs',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'factId',
+          'chapterId',
+          'masteryLevel',
+          'wrongCount',
+          'correctCount',
+          'nextReviewAtMs',
+          'updatedAt'
+        ])
+        && data.ownerId == userId
+        && data.factId == factId
+        && isValidId(data.ownerId, 128)
+        && isValidId(data.factId, 64)
+        && isValidId(data.chapterId, 32)
+        && data.masteryLevel is number && data.masteryLevel >= 0 && data.masteryLevel <= 3
+        && data.wrongCount is number && data.wrongCount >= 0 && data.wrongCount <= 1000
+        && data.correctCount is number && data.correctCount >= 0 && data.correctCount <= 1000
+        && data.nextReviewAtMs is number && data.nextReviewAtMs >= 0
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidBookletQuizState(data, userId, questionId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'questionId',
+          'chapterId',
+          'isCorrect',
+          'selectedIndex',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'questionId',
+          'chapterId',
+          'isCorrect',
+          'selectedIndex',
+          'updatedAt'
+        ])
+        && data.ownerId == userId
+        && data.questionId == questionId
+        && isValidId(data.ownerId, 128)
+        && isValidId(data.questionId, 64)
+        && isValidId(data.chapterId, 32)
+        && data.isCorrect is bool
+        && data.selectedIndex is number && data.selectedIndex >= -1 && data.selectedIndex <= 10
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAchievementUnlock(data, userId, achievementId) {
+      return data.keys().hasAll(['ownerId', 'achievementId', 'unlockedAt'])
+        && data.keys().hasOnly(['ownerId', 'achievementId', 'unlockedAt'])
+        && data.ownerId == userId
+        && data.achievementId == achievementId
+        && isValidId(data.ownerId, 128)
+        && isValidId(data.achievementId, 64)
+        && data.unlockedAt is timestamp;
+    }
+
+    function isValidPlayerGameState(data, userId, stateId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'stateId',
+          'hasStartedOnce',
+          'gender',
+          'robeColorId',
+          'satchelColorId',
+          'companionColorId',
+          'cosmeticStars',
+          'unlockedCosmeticIds',
+          'posX',
+          'posY',
+          'posZ',
+          'posYaw',
+          'dailyStreakDays',
+          'lastActiveDate',
+          'dailyChallengeDate',
+          'dailyChallengeCompleted',
+          'dailyChallengeClaimed',
+          'collectedStarsDate',
+          'collectedStarIdsToday',
+          'volume',
+          'cameraSensitivity',
+          'quality',
+          'mobileButtonSize',
+          'leftHanded',
+          'fontSize',
+          'reducedMotion',
+          'highContrast',
+          'tutorialCompleted',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'stateId',
+          'hasStartedOnce',
+          'gender',
+          'robeColorId',
+          'satchelColorId',
+          'companionColorId',
+          'cosmeticStars',
+          'unlockedCosmeticIds',
+          'posX',
+          'posY',
+          'posZ',
+          'posYaw',
+          'dailyStreakDays',
+          'lastActiveDate',
+          'dailyChallengeDate',
+          'dailyChallengeCompleted',
+          'dailyChallengeClaimed',
+          'collectedStarsDate',
+          'collectedStarIdsToday',
+          'volume',
+          'cameraSensitivity',
+          'quality',
+          'mobileButtonSize',
+          'leftHanded',
+          'fontSize',
+          'reducedMotion',
+          'highContrast',
+          'tutorialCompleted',
+          'updatedAt'
+        ])
+        && data.ownerId == userId
+        && data.stateId == stateId
+        && isValidId(data.ownerId, 128)
+        && data.stateId == 'player'
+        && data.hasStartedOnce is bool
+        && data.gender in ['boy', 'girl']
+        && isValidId(data.robeColorId, 48)
+        && isValidId(data.satchelColorId, 48)
+        && isValidId(data.companionColorId, 48)
+        && data.cosmeticStars is number && data.cosmeticStars >= 0 && data.cosmeticStars <= 10000
+        && hasValidBoundedStringList(data.unlockedCosmeticIds, 40)
+        && data.posX is number && data.posX >= -200 && data.posX <= 200
+        && data.posY is number && data.posY >= -50 && data.posY <= 100
+        && data.posZ is number && data.posZ >= -200 && data.posZ <= 200
+        && data.posYaw is number && data.posYaw >= -20 && data.posYaw <= 20
+        && data.dailyStreakDays is number && data.dailyStreakDays >= 0 && data.dailyStreakDays <= 10000
+        && data.lastActiveDate is string && data.lastActiveDate.size() <= 20
+        && data.dailyChallengeDate is string && data.dailyChallengeDate.size() <= 20
+        && data.dailyChallengeCompleted is number && data.dailyChallengeCompleted >= 0 && data.dailyChallengeCompleted <= 100
+        && data.dailyChallengeClaimed is bool
+        && data.collectedStarsDate is string && data.collectedStarsDate.size() <= 20
+        && hasValidBoundedStringList(data.collectedStarIdsToday, 40)
+        && data.volume is number && data.volume >= 0 && data.volume <= 1
+        && data.cameraSensitivity is number && data.cameraSensitivity >= 0.3 && data.cameraSensitivity <= 3
+        && data.quality in ['auto', 'low', 'medium', 'high']
+        && data.mobileButtonSize in ['normal', 'large']
+        && data.leftHanded is bool
+        && data.fontSize in ['normal', 'large']
+        && data.reducedMotion is bool
+        && data.highContrast is bool
+        && data.tutorialCompleted is bool
+        && data.updatedAt is timestamp;
+    }
+
+    match /test/connection {
+      allow get: if true;
+      allow list, write: if false;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId, 128) && isOwner(userId);
+      allow list: if false;
+      allow create: if isValidId(userId, 128)
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId, 128)
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName',
+          'xp',
+          'rankIndex',
+          'bestStreak',
+          'currentStreak',
+          'totalCorrect',
+          'totalAnswered',
+          'completedCardsCount',
+          'soundEnabled',
+          'updatedAt'
+        ]);
+      allow delete: if false;
+
+      match /stationStates/{stationId} {
+        allow get: if isValidId(userId, 128) && isValidId(stationId, 64) && isOwner(userId);
+        allow list: if isValidId(userId, 128) && isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isValidId(userId, 128)
+          && isValidId(stationId, 64)
+          && isOwner(userId)
+          && isValidStationProgress(incoming(), userId, stationId)
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow update: if isValidId(userId, 128)
+          && isValidId(stationId, 64)
+          && isOwner(userId)
+          && isValidStationProgress(incoming(), userId, stationId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().stationId == existing().stationId
+          && incoming().chapterId == existing().chapterId
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'stars',
+            'bestScore',
+            'completedCardIds',
+            'challengePassed',
+            'updatedAt'
+          ])
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow delete: if false;
+      }
+
+      match /factStates/{factId} {
+        allow get: if isValidId(userId, 128) && isValidId(factId, 64) && isOwner(userId);
+        allow list: if isValidId(userId, 128) && isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isValidId(userId, 128)
+          && isValidId(factId, 64)
+          && isOwner(userId)
+          && isValidFactMastery(incoming(), userId, factId)
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow update: if isValidId(userId, 128)
+          && isValidId(factId, 64)
+          && isOwner(userId)
+          && isValidFactMastery(incoming(), userId, factId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().factId == existing().factId
+          && incoming().chapterId == existing().chapterId
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'masteryLevel',
+            'wrongCount',
+            'correctCount',
+            'nextReviewAtMs',
+            'updatedAt'
+          ])
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow delete: if false;
+      }
+
+      match /quizAnswers/{questionId} {
+        allow get: if isValidId(userId, 128) && isValidId(questionId, 64) && isOwner(userId);
+        allow list: if isValidId(userId, 128) && isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isValidId(userId, 128)
+          && isValidId(questionId, 64)
+          && isOwner(userId)
+          && isValidBookletQuizState(incoming(), userId, questionId)
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow update: if isValidId(userId, 128)
+          && isValidId(questionId, 64)
+          && isOwner(userId)
+          && isValidBookletQuizState(incoming(), userId, questionId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().questionId == existing().questionId
+          && incoming().chapterId == existing().chapterId
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'isCorrect',
+            'selectedIndex',
+            'updatedAt'
+          ])
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow delete: if false;
+      }
+
+      match /achievements/{achievementId} {
+        allow get: if isValidId(userId, 128) && isValidId(achievementId, 64) && isOwner(userId);
+        allow list: if isValidId(userId, 128) && isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isValidId(userId, 128)
+          && isValidId(achievementId, 64)
+          && isOwner(userId)
+          && isValidAchievementUnlock(incoming(), userId, achievementId)
+          && incoming().unlockedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow update, delete: if false;
+      }
+
+      match /gameState/{stateId} {
+        allow get: if isValidId(userId, 128) && isValidId(stateId, 32) && isOwner(userId);
+        allow list: if isValidId(userId, 128) && isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isValidId(userId, 128)
+          && isValidId(stateId, 32)
+          && isOwner(userId)
+          && isValidPlayerGameState(incoming(), userId, stateId)
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow update: if isValidId(userId, 128)
+          && isValidId(stateId, 32)
+          && isOwner(userId)
+          && isValidPlayerGameState(incoming(), userId, stateId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().stateId == existing().stateId
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'hasStartedOnce',
+            'gender',
+            'robeColorId',
+            'satchelColorId',
+            'companionColorId',
+            'cosmeticStars',
+            'unlockedCosmeticIds',
+            'posX',
+            'posY',
+            'posZ',
+            'posYaw',
+            'dailyStreakDays',
+            'lastActiveDate',
+            'dailyChallengeDate',
+            'dailyChallengeCompleted',
+            'dailyChallengeClaimed',
+            'collectedStarsDate',
+            'collectedStarIdsToday',
+            'volume',
+            'cameraSensitivity',
+            'quality',
+            'mobileButtonSize',
+            'leftHanded',
+            'fontSize',
+            'reducedMotion',
+            'highContrast',
+            'tutorialCompleted',
+            'updatedAt'
+          ])
+          && exists(/databases/$(database)/documents/users/$(userId));
+        allow delete: if false;
+      }
+    }
+  }
+}

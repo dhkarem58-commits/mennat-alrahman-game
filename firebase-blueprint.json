@@ -1,0 +1,358 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student scholarly profile, rank, experience points, and streak statistics.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "xp": {
+          "type": "number"
+        },
+        "rankIndex": {
+          "type": "number"
+        },
+        "bestStreak": {
+          "type": "number"
+        },
+        "currentStreak": {
+          "type": "number"
+        },
+        "totalCorrect": {
+          "type": "number"
+        },
+        "totalAnswered": {
+          "type": "number"
+        },
+        "completedCardsCount": {
+          "type": "number"
+        },
+        "soundEnabled": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "xp",
+        "rankIndex",
+        "bestStreak",
+        "currentStreak",
+        "totalCorrect",
+        "totalAnswered",
+        "completedCardsCount",
+        "soundEnabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StationProgress": {
+      "title": "StationProgress",
+      "description": "Per-station progress, completed cards, stars, and challenge completion state.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "stationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "chapterId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "stars": {
+          "type": "number"
+        },
+        "bestScore": {
+          "type": "number"
+        },
+        "completedCardIds": {
+          "type": "array"
+        },
+        "challengePassed": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "stationId",
+        "chapterId",
+        "stars",
+        "bestScore",
+        "completedCardIds",
+        "challengePassed",
+        "updatedAt"
+      ]
+    },
+    "FactMastery": {
+      "title": "FactMastery",
+      "description": "Spaced-repetition mastery record for an individual booklet knowledge card.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "factId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "chapterId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "masteryLevel": {
+          "type": "number"
+        },
+        "wrongCount": {
+          "type": "number"
+        },
+        "correctCount": {
+          "type": "number"
+        },
+        "nextReviewAtMs": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "factId",
+        "chapterId",
+        "masteryLevel",
+        "wrongCount",
+        "correctCount",
+        "nextReviewAtMs",
+        "updatedAt"
+      ]
+    },
+    "BookletQuizState": {
+      "title": "BookletQuizState",
+      "description": "Student answer state for an official booklet drill or essay question.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "questionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "chapterId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        },
+        "selectedIndex": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "questionId",
+        "chapterId",
+        "isCorrect",
+        "selectedIndex",
+        "updatedAt"
+      ]
+    },
+    "AchievementUnlock": {
+      "title": "AchievementUnlock",
+      "description": "Unlocked scholarly trophy badge for the student.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "achievementId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "unlockedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "achievementId",
+        "unlockedAt"
+      ]
+    },
+    "PlayerGameState": {
+      "title": "PlayerGameState",
+      "description": "Student avatar customization, safe position, cosmetic stars, daily streak/challenge, and settings.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "stateId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "hasStartedOnce": { "type": "boolean" },
+        "gender": { "type": "string", "enum": ["boy", "girl"] },
+        "robeColorId": { "type": "string", "minLength": 1, "maxLength": 48 },
+        "satchelColorId": { "type": "string", "minLength": 1, "maxLength": 48 },
+        "companionColorId": { "type": "string", "minLength": 1, "maxLength": 48 },
+        "cosmeticStars": { "type": "number" },
+        "unlockedCosmeticIds": { "type": "array" },
+        "posX": { "type": "number" },
+        "posY": { "type": "number" },
+        "posZ": { "type": "number" },
+        "posYaw": { "type": "number" },
+        "dailyStreakDays": { "type": "number" },
+        "lastActiveDate": { "type": "string", "maxLength": 20 },
+        "dailyChallengeDate": { "type": "string", "maxLength": 20 },
+        "dailyChallengeCompleted": { "type": "number" },
+        "dailyChallengeClaimed": { "type": "boolean" },
+        "collectedStarsDate": { "type": "string", "maxLength": 20 },
+        "collectedStarIdsToday": { "type": "array" },
+        "volume": { "type": "number" },
+        "cameraSensitivity": { "type": "number" },
+        "quality": { "type": "string", "enum": ["auto", "low", "medium", "high"] },
+        "mobileButtonSize": { "type": "string", "enum": ["normal", "large"] },
+        "leftHanded": { "type": "boolean" },
+        "fontSize": { "type": "string", "enum": ["normal", "large"] },
+        "reducedMotion": { "type": "boolean" },
+        "highContrast": { "type": "boolean" },
+        "tutorialCompleted": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "ownerId",
+        "stateId",
+        "hasStartedOnce",
+        "gender",
+        "robeColorId",
+        "satchelColorId",
+        "companionColorId",
+        "cosmeticStars",
+        "unlockedCosmeticIds",
+        "posX",
+        "posY",
+        "posZ",
+        "posYaw",
+        "dailyStreakDays",
+        "lastActiveDate",
+        "dailyChallengeDate",
+        "dailyChallengeCompleted",
+        "dailyChallengeClaimed",
+        "collectedStarsDate",
+        "collectedStarIdsToday",
+        "volume",
+        "cameraSensitivity",
+        "quality",
+        "mobileButtonSize",
+        "leftHanded",
+        "fontSize",
+        "reducedMotion",
+        "highContrast",
+        "tutorialCompleted",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Private student profile and aggregate learning telemetry."
+    },
+    "/users/{userId}/stationStates/{stationId}": {
+      "schema": {
+        "$ref": "#/entities/StationProgress"
+      },
+      "description": "Per-station progress and star mastery."
+    },
+    "/users/{userId}/factStates/{factId}": {
+      "schema": {
+        "$ref": "#/entities/FactMastery"
+      },
+      "description": "Spaced-repetition mastery per booklet knowledge card."
+    },
+    "/users/{userId}/quizAnswers/{questionId}": {
+      "schema": {
+        "$ref": "#/entities/BookletQuizState"
+      },
+      "description": "Recorded student answers for official booklet exercises."
+    },
+    "/users/{userId}/achievements/{achievementId}": {
+      "schema": {
+        "$ref": "#/entities/AchievementUnlock"
+      },
+      "description": "Unlocked achievement badges."
+    },
+    "/users/{userId}/gameState/{stateId}": {
+      "schema": {
+        "$ref": "#/entities/PlayerGameState"
+      },
+      "description": "Player avatar appearance, position, cosmetic stars, daily streak, and accessibility settings."
+    }
+  }
+}
